@@ -14,7 +14,7 @@ enum EmulatorClient {
   RetroArch = "retroarch",
   NWA = "nwa",
   QUSB2SNES = "qusb2snes",
-  // LinuxMem = "linuxmem",
+  LinuxMem = "linuxmem",
 }
 
 enum ConnectionStatus {
