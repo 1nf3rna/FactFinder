@@ -2,7 +2,7 @@ package main
 
 import (
 	"FactFinder/emulator"
-	linuxmem "FactFinder/emulator/linux"
+	// linuxmem "FactFinder/emulator/linux"
 	"FactFinder/emulator/nwa"
 	"FactFinder/emulator/qusb2snes"
 	"FactFinder/emulator/retroarch"
@@ -49,10 +49,10 @@ type App struct {
 
 	processingEngine *processing.Engine
 
-	retroarch          *retroarch.Client
-	nwa                *nwa.Client
-	qusb2snes          *qusb2snes.Client
-	linuxProcessClient *linuxmem.Client
+	retroarch *retroarch.Client
+	nwa       *nwa.Client
+	qusb2snes *qusb2snes.Client
+	// linuxProcessClient *linuxmem.Client
 }
 
 // NewApp creates a new App application struct
@@ -61,17 +61,17 @@ func NewApp(
 	retroarchClient *retroarch.Client,
 	nwaClient *nwa.Client,
 	qusb2snesClient *qusb2snes.Client,
-	linuxProcessClient *linuxmem.Client,
+	// linuxProcessClient *linuxmem.Client,
 	processingEngine *processing.Engine,
 	osConnectionCh chan bool,
 ) *App {
 
 	return &App{
-		factFinderFolder:   factFinderFolder,
-		retroarch:          retroarchClient,
-		nwa:                nwaClient,
-		qusb2snes:          qusb2snesClient,
-		linuxProcessClient: linuxProcessClient,
+		factFinderFolder: factFinderFolder,
+		retroarch:        retroarchClient,
+		nwa:              nwaClient,
+		qusb2snes:        qusb2snesClient,
+		// linuxProcessClient: linuxProcessClient,
 
 		// default client
 		memoryReader: retroarchClient,
@@ -109,8 +109,8 @@ func (a *App) SetEmulatorClient(client string) error {
 	case "qusb2snes":
 		a.memoryReader = a.qusb2snes
 
-	case "linuxmem":
-		a.memoryReader = a.linuxProcessClient
+	// case "linuxmem":
+	// 	a.memoryReader = a.linuxProcessClient
 
 	default:
 		a.m.Unlock()
@@ -208,11 +208,11 @@ func (a *App) SetReadPlan(path string) error {
 		return err
 	}
 
-	rp := a.readPlan
+	// rp := a.readPlan
 
-	if linux, ok := a.memoryReader.(*linuxmem.Client); ok {
-		linux.SetReadPlan(rp)
-	}
+	// if linux, ok := a.memoryReader.(*linuxmem.Client); ok {
+	// 	linux.SetReadPlan(rp)
+	// }
 
 	luaFile := filepath.Join(path, "factbuilder.lua")
 	err = a.processingEngine.LoadFile(luaFile, a.readPlan)
