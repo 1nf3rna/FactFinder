@@ -1,6 +1,7 @@
 package processing
 
 import (
+	"FactFinder/command"
 	"FactFinder/emulator"
 	"FactFinder/logger"
 	"fmt"
@@ -13,111 +14,6 @@ import (
 )
 
 var log = logger.Module("processing/engine").SetLevel(logger.DebugLevel)
-
-type Command byte
-
-const (
-	QUIT Command = iota
-
-	//
-	// Split files
-	//
-
-	NEW
-	LOAD
-	EDIT
-
-	CANCEL
-	SUBMIT
-
-	CLOSE
-
-	RESET
-	SAVE
-
-	//
-	// Timer
-	//
-
-	SPLIT
-	UNDO
-	SKIP
-
-	PAUSE
-
-	//
-	// Configuration
-	//
-
-	TOGGLEGLOBAL
-	SETLAYOUT
-	TOGGLEWR
-
-	FOCUS
-
-	//
-	// Internal
-	//
-
-	HELLO
-
-	DONE
-	UNDONE
-
-	//
-	// Runtime offset
-	//
-
-	SET_RUNTIME_OFFSET
-	CLEAR_RUNTIME_OFFSET
-
-	//
-	// Display control
-	//
-
-	COMPARISON_LEFT
-	COMPARISON_RIGHT
-
-	//
-	// Skin management
-	//
-
-	NEW_SKIN
-	EDIT_SKIN
-
-	SKIN_SELECT
-
-	//
-	// Skin editor navigation
-	//
-
-	SKIN_FILE
-	SKIN_ELEMENT
-	SKIN_RULE
-
-	CLEAR_ELEMENT
-
-	//
-	// Skin editor working copy mutations
-	//
-
-	SKIN_CREATE_FILE
-	SKIN_CREATE_RULE
-
-	SKIN_RULE_UPDATE
-	SKIN_FILE_UPDATE
-
-	SKIN_RULE_DELETE
-
-	SKIN_PREVIEW_SET
-
-	//
-	// Skin editor persistence
-	//
-
-	SKIN_SAVE
-	SKIN_RELOAD
-)
 
 type Engine struct {
 	L                    *lua.LState
@@ -193,14 +89,14 @@ func (e *Engine) LoadFile(path string, plan *emulator.ReadPlan) error {
 	}
 
 	e.L.SetGlobal("split", e.L.NewFunction(func(L *lua.LState) int {
-		packet := buildRCPacket(SPLIT, false)
+		packet := buildRCPacket(command.SPLIT, false)
 
 		e.m.Lock()
 		defer e.m.Unlock()
 
 		_, err := e.conn.WriteTo(packet, e.osAddr)
 		if err != nil {
-			log.Error("failed to send %v packet: %v", SPLIT, err)
+			log.Error("failed to send %v packet: %v", command.SPLIT, err)
 			e.updateConnectionStatus(false)
 			return 1
 		}
@@ -209,7 +105,7 @@ func (e *Engine) LoadFile(path string, plan *emulator.ReadPlan) error {
 	}))
 
 	e.L.SetGlobal("reset", e.L.NewFunction(func(L *lua.LState) int {
-		packet := buildRCPacket(RESET, false)
+		packet := buildRCPacket(command.RESET, false)
 
 		e.m.Lock()
 		defer e.m.Unlock()
@@ -225,7 +121,7 @@ func (e *Engine) LoadFile(path string, plan *emulator.ReadPlan) error {
 	}))
 
 	e.L.SetGlobal("pause", e.L.NewFunction(func(L *lua.LState) int {
-		packet := buildRCPacket(PAUSE, false)
+		packet := buildRCPacket(command.PAUSE, false)
 
 		e.m.Lock()
 		defer e.m.Unlock()
@@ -323,7 +219,7 @@ func (e *Engine) ProcessValues(values []emulator.Value) error {
 
 func (e *Engine) Hello() bool {
 	log.Debug("sending OpenSplit HELLO")
-	packet := buildRCPacket(HELLO, true)
+	packet := buildRCPacket(command.HELLO, true)
 
 	e.m.Lock()
 	_, err := e.conn.WriteTo(packet, e.osAddr)
@@ -345,7 +241,7 @@ func (e *Engine) Hello() bool {
 	return true
 }
 
-func buildRCPacket(command Command, requestAck bool) []byte {
+func buildRCPacket(command command.Command, requestAck bool) []byte {
 	var payload = make([]byte, 7)
 	payload[0] = 'O' //magic
 	payload[1] = 'S'
